@@ -1,0 +1,2022 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zymark Bookmark Dashboard (Offline)</title>
+    <style>
+        body {
+            background-image: url('path/to/default-background.jpg');
+            background-attachment: fixed;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            color: #ffffff;
+            background-color: #121212;
+            text-align: center;
+        }
+
+        header {
+            background-color: #1e1e1ed4;
+            color: white;
+            text-align: center;
+            padding: 20px 0px 0px 0px;
+            font-size: 2rem;
+        }
+
+        .settings-btn {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.3rem;
+        }
+
+        .settings-btn:hover {
+            background-color: #484848;
+            border-radius: 5px;
+        }
+
+        .settings-select {
+            background-color: #2c2c2c;
+            color: #e0e0e0;
+            border: 1px solid #444;
+            border-radius: 5px;
+            padding: 5px;
+            width: 80px;
+        }
+
+        .settings-select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .toolbar {
+            background-color: #1e1e1ed4;
+            padding: 8px;
+            text-align: center;
+            position: relative;
+            /* Required for pseudo-element positioning */
+        }
+
+        .toolbar::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(to bottom, #1e1e1ed4, transparent 100%);
+        }
+
+
+        .toolbar button {
+            background-color: #1f1f1f00;
+            color: rgb(94, 94, 94);
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .toolbar button:hover {
+            background-color: #2b2b2b;
+        }
+
+        .search-container {
+            display: flex;
+            margin: 20px auto -10px auto;
+            max-width: 600px;
+            position: sticky;
+            top: 10px;
+            z-index: 999;
+        }
+
+        .search-engine-select {
+            background-color: #2c2c2c;
+            color: #e0e0e0;
+            border-left: 1px solid #444;
+            border-right: none;
+            border-top: 1px solid #444;
+            border-bottom: 1px solid #444;
+            border-radius: 5px 0px 0px 5px;
+            padding: 15px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100px;
+        }
+
+        .search-engine-select:hover {
+            background-color: #363636;
+        }
+
+        .search-engine-select option {
+            background-color: #2c2c2c;
+            color: #e0e0e0;
+        }
+
+        .search-bar {
+            flex-grow: 1;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-input {
+            flex-grow: 1;
+            background-color: #2c2c2c;
+            color: #e0e0e0;
+            border-right: none;
+            border-left: none;
+            border-top: 1px solid #444;
+            border-bottom: 1px solid #444;
+            padding: 8px 15px;
+            font-size: 1rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+        }
+
+        .search-button {
+            background-color: #004878;
+            margin-left: -10px;
+            color: white;
+            border: none;
+            border-radius: 0px 5px 5px 0px;
+            padding: 8px 20px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .search-button:hover {
+            background-color: #bd0000;
+        }
+
+        .dashboard {
+            gap: 20px;
+            padding: 30px;
+        }
+
+        .section {
+            background-color: #1c1c1c75;
+            border-radius: 20px;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: grid;
+            grid-template-columns: repeat(var(--bookmarks-per-row, 4), 1fr);
+            /* Updated line */
+            grid-auto-flow: dense;
+            gap: 20px;
+            box-sizing: border-box;
+            transition: transform 0.3s ease;
+        }
+
+        .edit-section-btn {
+            background: none;
+            border: none;
+            color: #3498db;
+            cursor: pointer;
+            font-size: 1.3rem;
+            padding: 5px;
+            transition: color 0.3s;
+            float: right;
+        }
+
+        .edit-section-btn:hover {
+            color: #2980b9;
+        }
+
+        .section-name-input {
+            background-color: #2c2c2c;
+            color: #e0e0e0;
+            border: 1px solid #3498db;
+            font-size: 2rem;
+            width: calc(100% - 100px);
+        }
+
+        .bookmark-card {
+            background-color: #2c2c2ccc;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            height: 100px;
+            box-sizing: border-box;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .bookmark-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .bookmark-icon {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            margin-left: -20px;
+            margin-right: 2%;
+            background-color: #333;
+            border-radius: 15px 0px 0px 15px;
+            box-sizing: border-box;
+        }
+
+        .icon-upload-container {
+            display: flex;
+            width: 100%;
+            align-items: center;
+            margin: 0 0 10px 0;
+            gap: 10px;
+        }
+
+
+        .icon-preview {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            background-color: #333;
+            border-radius: 5px;
+            padding: 5px;
+        }
+
+        .bookmark-initial {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #3498db;
+            background-color: #333;
+            border-radius: 15px 0px 0px 15px;
+            width: 100px;
+            height: 100px;
+            margin-left: -20px;
+            margin-right: 2%;
+            align-items: center;
+            justify-content: center;
+            min-width: 50px;
+            line-height: 50px;
+            display: flex;
+            /* Ensure it is flex if you want it centered */
+            flex-direction: column;
+            /* Keeps elements stacked if necessary */
+        }
+
+        .bookmark-card {
+            grid-column: span 1;
+            grid-row: span 1;
+            position: relative;
+            /* Ensure the parent is the reference for absolute positioning */
+        }
+
+        .bookmark-card h3 {
+            position: absolute;
+            /* Remove it from the flow */
+            top: 20px;
+            /* Adjust based on the space you need */
+            left: 110px;
+            right: 10px;
+            font-size: 1.1rem;
+            color: #e0e0e0;
+            margin-top: 0;
+            margin-bottom: 0;
+            text-align: left;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+
+        .bookmark-card p {
+            position: absolute;
+            /* Remove it from the flow */
+            top: 45px;
+            /* Adjust based on the space you need */
+            left: 110px;
+            right: 10px;
+            font-size: 0.8rem;
+            color: #e0e0e062;
+            margin-top: 0;
+            margin-bottom: 0;
+            text-align: left;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .color-picker-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .color-picker-container label {
+            display: flex;
+            margin: 0px 10px 0px 0px;
+            width: 50%;
+            align-items: center;
+            color: #888;
+        }
+
+        .color-picker-container input[type="color"] {
+            width: 100%;
+            height: 30px;
+            margin: 10px 0px 0px 0px;
+            padding: 0;
+            border: none;
+            background: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: #1e1e1e;
+            position: relative;
+            padding: 0px 20px 0px 20px;
+            border-radius: 10px;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .modal-content input,
+        .modal-content textarea,
+        .modal-content select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #555;
+            border-radius: 5px;
+            background-color: #333;
+            color: #e0e0e0;
+            box-sizing: border-box;
+        }
+
+        .modal-content textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .modal-content label {
+            display: block;
+            text-align: left;
+            margin-bottom: 5px;
+            color: #888;
+        }
+
+        .modal-content .form-group {
+            margin-bottom: 15px;
+        }
+
+        .modal-content button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #closeModalBtn,
+        #closeNoteModalBtn,
+        #createSectionCancel {
+            background: none;
+            font-weight: bold;
+            border: none;
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            color: #717171;
+            cursor: pointer;
+            font-size: 1.3rem;
+        }
+
+        #closeModalBtn,
+        #closeNoteModalBtn,
+        #createSectionCancel:hover {
+            color: #bcbcbc;
+            transition: 0.3s;
+        }
+
+        .modal-content button:hover {
+            background-color: #2980b9;
+        }
+
+        #bookmarkContextMenu {
+            display: none;
+            position: fixed;
+            background-color: #2c2c2c;
+            text-align: left;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            color: #e0e0e0;
+
+        }
+
+        #bookmarkContextMenu .context-menu-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 1s;
+        }
+
+        #bookmarkContextMenu .context-menu-item:hover {
+            background-color: #121212;
+            border-bottom: solid 1px #2980b9;
+        }
+
+        .delete-section-btn {
+    background: none;
+    border: none;
+    color: #db3434;
+    cursor: pointer;
+    font-size: 1.3rem;
+    padding: 5px;
+    transition: color 0.3s;
+    order: 99;
+}
+
+        .delete-section-btn:hover {
+            color: #b92929;
+        }
+
+        .bookmark-card .click-count {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.324);
+            color: #ffffff5e;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.7rem;
+        }
+
+        #settingsModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .settings-content {
+            background-color: #1e1e1e;
+            padding: 0px 20px 20px 20px;
+            border-radius: 10px;
+            width: 300px;
+            max-width: 90%;
+        }
+
+        .settings-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #2c2c2c;
+            border-radius: 5px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            border-radius: 5px;
+        }
+
+        input:checked+.slider {
+            background-color: #3498db;
+        }
+
+        #digital-clock::before {
+            content: 'Clock';
+            font-size: 1rem;
+            color: #c0c0c0;
+            font-weight: bold;
+            margin-bottom: 3px;
+            display: block;
+        }
+
+        #digital-clock {
+            display: flex;
+            flex-direction: column;
+            background-color: #0000005a;
+            border-radius: 5px;
+            padding: 10px;
+            position: absolute;
+            left: 20px;
+            top: 3%;
+            font-family: 'Courier New', monospace;
+            font-size: 1.5rem;
+            color: #989898;
+            z-index: 999;
+            min-width: 8%;
+        }
+
+        .clock-time {
+            opacity: 0.8;
+        }
+
+        .clock-seconds {
+            font-size: 0.6rem;
+            margin-left: 2px;
+        }
+
+        .note-card {
+            background-color: #2c2c2ccc;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .note-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .note-card.size-1x1 {
+            width: 100%;
+            height: 100px;
+            grid-column: span 1;
+            grid-row: span 1;
+        }
+
+        .note-card.size-1x2 {
+            width: 100%;
+            height: 110px;
+            grid-column: span 2;
+            grid-row: span 1;
+        }
+
+        .note-card.size-2x1 {
+            width: 100%;
+            height: 220px;
+            grid-column: span 1;
+            grid-row: span 2;
+        }
+
+        .note-card.size-2x2 {
+            width: 100%;
+            height: 220px;
+            grid-column: span 2;
+            grid-row: span 2;
+        }
+
+        .note-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #e0e0e0;
+            text-align: left;
+            border-bottom: solid 1px #575757;
+        }
+
+        .note-content {
+            font-size: 0.9rem;
+            color: #b0b0b0;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            line-height: 1.4;
+            text-align: left;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: left;
+            border-bottom: solid 2px #575757;
+            margin-left: 10px;
+            margin-bottom: 10px;
+            grid-column: 1 / -1;
+            position: relative;
+            white-space: nowrap;
+            justify-content: flex-start;
+            gap: 20px;
+        }
+
+        .section-sort-buttons {
+            display: flex;
+            margin-right: auto;
+            margin-left: 30px;
+            /* Push sort buttons to the left */
+            margin-bottom: -20px;
+            gap: 5px;
+        }
+
+        .section-sort-button {
+            background-color: transparent;
+            color: #888;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: background-color 0.3s, color 0.3s;
+            white-space: nowrap;
+            /* This prevents text wrapping */
+        }
+
+        .section-sort-button:hover {
+            background-color: transparent;
+            color: #ddd;
+        }
+
+        .section-sort-button.active-sort {
+            font-size: 1.1rem;
+            color: rgb(183, 183, 183);
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div id="digital-clock">Clock</div>
+        Zymark Bookmark Dashboard
+                <button id="settingsBtn" class="settings-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" width="24" height="24" viewBox="0 0 24 24"
+                stroke-width="2" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+            </svg>
+        </button>
+    </header>
+    <div id="settingsModal">
+        <div class="settings-content">
+            <h2>Settings</h2>
+            <div class="settings-option">
+                <span>Show Click Counts</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="showClicksToggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="settings-option">
+                <span>12-Hour Time Format</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="hour12Toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="settings-option">
+                <span>Bookmarks Per Row</span>
+                <select id="bookmarksPerRowSelect" class="settings-select"
+                    style="background: #333; color: #fff; padding: 5px; border-radius: 4px;">
+                    <option value="auto">Auto</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+
+                </select>
+            </div>
+            <button id="closeSettingsBtn"
+                style="background-color: #3498db; color: white; border: none; padding: 8px 16px; border-radius: 5px; margin-top: 10px; cursor: pointer;">Close</button>
+        </div>
+    </div>
+
+    <input type="file" id="backgroundImageInput" style="display: none;" accept="image/*">
+
+    <div class="toolbar">
+        <button class="toolbar-button" onclick="uploadBackgroundImage()">Upload Background Image</button>
+        <button id="addBookmarkBtn">Add Bookmark</button>
+        <button id="addSectionBtn">Add Section</button>
+        <button id="createNoteBtn">Add Note</button>
+        <button id="importBookmarksBtn">Import Bookmarks</button>
+        <button id="backupBookmarksBtn">Backup Bookmarks</button>
+        <button id="clearBookmarksBtn">Clear All </button>
+        <button id="resetClickCountsBtn">Reset Click Counts</button>
+    </div>
+    <div class="search-container">
+        <select class="search-engine-select" id="searchEngine">
+            <option value="yahoo">Yahoo</option>
+            <option value="google">Google</option>
+            <option value="duckduckgo">DuckDuckGo</option>
+        </select>
+        <div class="search-bar">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search the web..."
+                onkeypress="if(event.key === 'Enter') performSearch()">
+            <button class="search-button" onclick="performSearch()">Search</button>
+        </div>
+    </div>
+
+    <div class="dashboard" id="dashboard"></div>
+
+    <div id="addBookmarkForm" class="modal">
+        <div class="modal-content">
+            <div class="form-group">
+                <h2>Add Bookmark</h2>
+                <button id="closeModalBtn">X</button>
+            </div>
+            <div class="form-group">
+                <label for="bookmarkTitle">Title</label>
+                <input type="text" id="bookmarkTitle" placeholder="Enter bookmark title" required>
+            </div>
+            <div class="form-group">
+                <label for="bookmarkUrl">URL</label>
+                <input type="url" id="bookmarkUrl" placeholder="Enter website URL" required>
+            </div>
+            <div class="form-group">
+                <label for="bookmarkDescription">Description (Optional)</label>
+                <textarea id="bookmarkDescription" placeholder="Add a brief description"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="sectionSelect">Select Section</label>
+                <select id="sectionSelect"></select>
+            </div>
+            <div class="form-group">
+                <label>Custom Icon</label>
+                <div class="icon-upload-container">
+                    <img id="iconPreview" class="icon-preview" src="" alt="" style="display: none;">
+                    <input type="file" id="iconInput" accept="image/*" style="display: none;">
+                    <button type="button" onclick="document.getElementById('iconInput').click()">Upload Icon</button>
+                    <button type="button" id="removeIconBtn" style="display: none;" onclick="removeIcon()">Remove
+                        Icon</button>
+                </div>
+            </div>
+            <div class="form-group color-picker-container">
+                <label>
+                    Initial Color (when no icon)
+                    <input type="color" id="bookmarkInitialColor" value="#3498db">
+                </label>
+                <label>
+                    Background Color
+                    <input type="color" id="bookmarkBackgroundColor" value="#333">
+                </label>
+            </div>
+            <div class="form-group">
+                <button id="saveBookmarkBtn">Save Bookmark</button>
+            </div>
+        </div>
+    </div>
+    <div id="noteModal" class="modal">
+        <div class="modal-content">
+            <h2>Create Note</h2>
+            <button id="closeNoteModalBtn">X</button>
+
+            <div class="form-group">
+                <label for="noteTitle">Title</label>
+                <input type="text" id="noteTitle" placeholder="Enter note title" required>
+            </div>
+
+            <div class="form-group">
+                <label for="noteContent">Content</label>
+                <textarea id="noteContent" placeholder="Enter note content" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="noteSize">Size</label>
+                <select id="noteSize">
+                    <option value="1x1">1x1 (Regular)</option>
+                    <option value="1x2">1x2 (Wide)</option>
+                    <option value="2x1">2x1 (Tall)</option>
+                    <option value="2x2">2x2 (Large)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="sectionSelectNote">Select Section</label>
+                <select id="sectionSelectNote"></select>
+            </div>
+
+            <div class="form-group">
+                <button id="saveNoteBtn">Save Note</button>
+            </div>
+        </div>
+    </div>
+    <div id="sectionModal" class="modal">
+        <div class="modal-content">
+            <h2>Create New Section</h2>
+            <div class="form-group">
+                <label for="newSectionName">Section Name</label>
+                <input type="text" id="newSectionName" placeholder="Enter section name" required>
+            </div>
+            <div class="form-group">
+                <button id="createSectionConfirm">Create Section</button>
+                <button id="createSectionCancel">X</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="bookmarkContextMenu">
+        <div class="context-menu-item" id="openWebsiteOption">Open Website In New Tab</div>
+        <div class="context-menu-item" id="editBookmarkColorsOption">Edit Bookmark</div>
+        <div class="context-menu-item" id="deleteBookmarkOption">Delete Bookmark</div>
+    </div>
+    <script>
+        let sections = JSON.parse(localStorage.getItem("sections")) || [];
+        let currentEditBookmark = null;
+        let currentEditSectionId = null;
+        let showClicks = localStorage.getItem("showClicks") !== "false";
+        let hour12Format = localStorage.getItem("hour12Format") === "true";
+        let currentEditNote = null;
+        let bookmarksPerRow = localStorage.getItem("bookmarksPerRow") || "auto";
+        // Digital Clock
+        function updateClock() {
+            const now = new Date();
+            const timeOptions = {
+                hour12: hour12Format,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+
+            const fullTime = now.toLocaleTimeString('en-US', timeOptions);
+            const [time, period] = fullTime.split(' ');
+            const [hours, minutes, seconds] = time.split(':');
+
+            const clockHTML = `<span class="clock-time">${hours}:${minutes}<span class="clock-seconds">${seconds}</span>${period ? ' ' + period : ''}</span>      `;
+
+            document.getElementById('digital-clock').innerHTML = `<br>${clockHTML}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+        // Update clock every second
+        setInterval(updateClock, 1000);
+        updateClock(); // Initial call
+        // Function to handle background image upload
+        function uploadBackgroundImage() {
+            const backgroundImageInput = document.getElementById('backgroundImageInput');
+            backgroundImageInput.click();
+
+            // Listen for changes in the file input
+            backgroundImageInput.addEventListener('change', function () {
+                const file = this.files[0];
+
+                if (file) {
+                    const reader = new FileReader();
+
+                    reader.onload = function (e) {
+                        const imageData = e.target.result;
+
+                        // Save the image data to localStorage
+                        localStorage.setItem('backgroundImage', imageData);
+
+                        // Set the uploaded image as the background
+                        document.body.style.backgroundImage = `url('${imageData}')`;
+                        document.body.style.backgroundSize = 'cover';
+                    };
+
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // To restore the background image from localStorage on page load:
+        window.onload = function () {
+            const savedImage = localStorage.getItem('backgroundImage');
+            if (savedImage) {
+                document.body.style.backgroundImage = `url('${savedImage}')`;
+                document.body.style.backgroundSize = 'cover';
+            }
+        };
+        // Add icon handling
+        document.getElementById('iconInput').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const iconPreview = document.getElementById('iconPreview');
+                    iconPreview.src = e.target.result;
+                    iconPreview.style.display = 'block';
+                    document.getElementById('removeIconBtn').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function removeIcon() {
+            document.getElementById('iconPreview').style.display = 'none';
+            document.getElementById('iconPreview').src = '';
+            document.getElementById('iconInput').value = '';
+            document.getElementById('removeIconBtn').style.display = 'none';
+        }
+
+        function performSearch() {
+            const searchEngine = document.getElementById('searchEngine').value;
+            const searchQuery = document.getElementById('searchInput').value.trim();
+
+            if (!searchQuery) return;
+
+            const searchUrls = {
+                google: 'https://www.google.com/search?q=',
+                yahoo: 'https://search.yahoo.com/search?p=',
+                duckduckgo: 'https://duckduckgo.com/?q='
+            };
+
+            const baseUrl = searchUrls[searchEngine];
+            const searchUrl = baseUrl + encodeURIComponent(searchQuery);
+            window.open(searchUrl, '_self');
+        }
+
+        // Add event listener for search input
+        document.getElementById('searchInput').addEventListener('keypress', function (event) {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
+        });
+        function editSectionName(section, sectionNameElement) {
+            const input = document.createElement("input");
+            input.type = "text";
+            input.value = section.name;
+            input.classList.add("section-name-input");
+            input.addEventListener("blur", (e) => {
+                cancelEditSectionName(e); // Cancel edit on blur by default
+                saveEditedSectionName(e); // Save if necessary (for example, based on a condition)
+            }); // Trigger cancel on blur
+            input.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                    saveEditedSectionName(e); // Save on Enter key press
+                }
+            });
+
+            function saveEditedSectionName(e) {
+                const newName = input.value.trim();
+                if (newName && newName !== section.name) {
+                    // Check for duplicate section names
+                    const exists = sections.some(s => s.id !== section.id && s.name.toLowerCase() === newName.toLowerCase());
+                    if (exists) {
+                        alert("A section with this name already exists.");
+                        return;
+                    }
+
+                    section.name = newName;
+                    localStorage.setItem("sections", JSON.stringify(sections));
+                    renderSections();
+                }
+            }
+
+            function cancelEditSectionName(e) {
+                renderSections();
+            }
+
+            sectionNameElement.parentNode.replaceChild(input, sectionNameElement);
+            input.focus();
+            input.select();
+        }
+
+
+
+        function updateCustomOrder(section) {
+            // Ensure we capture the exact current order, including notes and bookmarks
+            section.customOrder = section.bookmarks.map(b => ({
+                title: b.title,
+                url: b.url,
+                type: b.type || 'bookmark'  // Add type to distinguish between notes and bookmarks
+            }));
+        }
+
+        function sortBookmarks(section, sortMethod) {
+            switch (sortMethod) {
+                case 'alpha':
+                    section.bookmarks.sort((a, b) => a.title.localeCompare(b.title));
+                    break;
+                case 'date':
+                    section.bookmarks.sort((a, b) => (a.id || 0) - (b.id || 0));
+                    break;
+                case 'clicks':
+                    section.bookmarks.sort((a, b) => (b.clickCount || 0) - (a.clickCount || 0));
+                    break;
+                case 'custom':
+                    if (section.customOrder && section.customOrder.length > 0) {
+                        const customOrderMap = new Map(
+                            section.customOrder.map((item, index) => [
+                                JSON.stringify({
+                                    title: item.title,
+                                    url: item.url || null,
+                                    type: item.type || 'bookmark',
+                                    id: item.id || null
+                                }),
+                                index
+                            ])
+                        );
+
+                        section.bookmarks.sort((a, b) => {
+                            const aKey = JSON.stringify({
+                                title: a.title,
+                                url: a.url || null,
+                                type: a.type || 'bookmark',
+                                id: a.id || null
+                            });
+                            const bKey = JSON.stringify({
+                                title: b.title,
+                                url: b.url || null,
+                                type: b.type || 'bookmark',
+                                id: b.id || null
+                            });
+
+                            const aIndex = customOrderMap.has(aKey) ? customOrderMap.get(aKey) : Number.MAX_SAFE_INTEGER;
+                            const bIndex = customOrderMap.has(bKey) ? customOrderMap.get(bKey) : Number.MAX_SAFE_INTEGER;
+                            return aIndex - bIndex;
+                        });
+                    }
+                    break;
+            }
+        }
+
+
+        // Simplified allowDrop
+        function allowDrop(e) {
+            e.preventDefault();
+        }
+
+        // New drop handler
+        // Update the handleDrop function to maintain grid layout
+        function handleDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const targetSection = e.currentTarget.closest('.section');
+            const sectionId = targetSection.getAttribute('data-section-id');
+            const section = sections.find(s => s.id == sectionId);
+
+            if (!section || section.sortMethod !== 'custom') {
+                alert("Items can only be reordered in Custom Order mode!");
+                return;
+            }
+
+            const draggedData = e.dataTransfer.getData("text");
+            const draggedItem = JSON.parse(draggedData);
+
+            // Find the drop target
+            const dropTarget = e.currentTarget;
+            const isCard = dropTarget.classList.contains('bookmark-card') ||
+                dropTarget.classList.contains('note-card');
+
+            // Remove item from its original section
+            sections.forEach(sect => {
+                sect.bookmarks = sect.bookmarks.filter(b =>
+                    !((draggedItem.type === 'note' && b.id === draggedItem.id) ||
+                        (!draggedItem.type && b.url === draggedItem.url && b.title === draggedItem.title))
+                );
+            });
+
+            // Add to new location
+            if (isCard) {
+                const cards = Array.from(targetSection.querySelectorAll('.bookmark-card, .note-card'));
+                const dropIndex = cards.indexOf(dropTarget);
+                section.bookmarks.splice(dropIndex, 0, draggedItem);
+            } else {
+                section.bookmarks.push(draggedItem);
+            }
+
+            // Update custom order
+            section.customOrder = section.bookmarks.map(b => ({
+                title: b.title,
+                url: b.url || null,
+                type: b.type || 'bookmark',
+                id: b.id || null
+            }));
+
+            localStorage.setItem("sections", JSON.stringify(sections));
+            renderSections();
+        }
+        function renderSections() {
+            const dashboard = document.getElementById("dashboard");
+            const sectionSelect = document.getElementById("sectionSelect");
+            const sectionSelectNote = document.getElementById("sectionSelectNote");
+            dashboard.innerHTML = '';
+            sectionSelect.innerHTML = '';
+            sectionSelectNote.innerHTML = '';
+
+            // Get the current bookmarksPerRow setting
+            const currentBookmarksPerRow = localStorage.getItem("bookmarksPerRow") || "auto";
+
+            sections.forEach(section => {
+                if (!section.customOrder && section.bookmarks.length > 0) {
+                    section.customOrder = section.bookmarks.map(b => ({
+                        title: b.title,
+                        url: b.url,
+                        type: b.type || 'bookmark'
+                    }));
+                }
+
+                if (!section.sortMethod) {
+                    section.sortMethod = 'custom';
+                }
+                const currentSortMethod = section.sortMethod;
+                sortBookmarks(section, currentSortMethod);
+
+                const sectionElement = document.createElement("div");
+                sectionElement.classList.add("section");
+                sectionElement.setAttribute("data-section-id", section.id);
+
+                // Apply the grid layout based on bookmarksPerRow setting
+                if (currentBookmarksPerRow === "auto") {
+                    sectionElement.style.gridTemplateColumns = "repeat(auto-fit, minmax(240px, 1fr))";
+                } else {
+                    sectionElement.style.gridTemplateColumns = `repeat(${currentBookmarksPerRow}, 1fr)`;
+                }
+
+                if (currentSortMethod === 'custom') {
+                    sectionElement.addEventListener("dragover", allowDrop);
+                    sectionElement.addEventListener("drop", handleDrop);
+                }
+
+                const sectionHeader = document.createElement("div");
+                sectionHeader.classList.add("section-header");
+
+                const sectionNameSpan = document.createElement("span");
+                sectionNameSpan.textContent = section.name;
+                sectionNameSpan.classList.add("section-name");
+
+                const sortButtonsContainer = document.createElement("div");
+                sortButtonsContainer.classList.add("section-sort-buttons");
+
+                const sortOptions = [
+                    { value: 'custom', icon: 'Custom Order', title: 'Custom Order' },
+                    { value: 'alpha', icon: 'Alphabetical', title: 'Alphabetical' },
+                    { value: 'date', icon: 'Date Created', title: 'Date Created' },
+                    { value: 'clicks', icon: 'Most Clicked', title: 'Most Clicked' }
+                ];
+
+                sortOptions.forEach(opt => {
+                    const sortButton = document.createElement("button");
+                    sortButton.textContent = opt.icon;
+                    sortButton.title = opt.title;
+                    sortButton.classList.add("section-sort-button");
+
+                    if (opt.value === currentSortMethod) {
+                        sortButton.classList.add("active-sort");
+                    }
+
+                    sortButton.addEventListener("click", () => {
+                        section.sortMethod = opt.value;
+                        localStorage.setItem("sections", JSON.stringify(sections));
+                        renderSections();
+                    });
+
+                    sortButtonsContainer.appendChild(sortButton);
+                });
+
+                const deleteSectionBtn = document.createElement("button");
+                deleteSectionBtn.textContent = "×";
+                deleteSectionBtn.classList.add("delete-section-btn");
+                deleteSectionBtn.addEventListener("click", () => deleteSection(section.id));
+
+                const editSectionBtn = document.createElement("button");
+                editSectionBtn.textContent = "✎";
+                editSectionBtn.classList.add("edit-section-btn");
+                editSectionBtn.addEventListener("click", () => editSectionName(section, sectionNameSpan));
+
+                sectionHeader.appendChild(sectionNameSpan);
+                sectionHeader.appendChild(sortButtonsContainer);
+                sectionHeader.appendChild(deleteSectionBtn);
+                sectionHeader.appendChild(editSectionBtn);
+                sectionElement.appendChild(sectionHeader);
+
+                section.bookmarks.forEach(item => {
+                    if (item.type === 'note') {
+                        const noteCard = document.createElement("div");
+                        noteCard.classList.add("note-card", `size-${item.size}`);
+                        noteCard.draggable = true;
+
+                        if (currentSortMethod === 'custom') {
+                            noteCard.addEventListener("dragstart", (e) => {
+                                e.dataTransfer.setData("text", JSON.stringify({
+                                    type: 'note',
+                                    ...item
+                                }));
+                            });
+                            noteCard.addEventListener("dragover", allowDrop);
+                            noteCard.addEventListener("drop", handleDrop);
+                        } else {
+                            noteCard.addEventListener("dragstart", (e) => {
+                                e.preventDefault();
+                                alert("Drag and drop is only available in Custom Order mode!");
+                            });
+                        }
+
+                        const titleElement = document.createElement("div");
+                        titleElement.classList.add("note-title");
+                        titleElement.textContent = item.title;
+
+                        const contentElement = document.createElement("div");
+                        contentElement.classList.add("note-content");
+                        contentElement.textContent = item.content;
+
+                        noteCard.appendChild(titleElement);
+                        noteCard.appendChild(contentElement);
+
+                        noteCard.addEventListener("contextmenu", (e) => {
+                            e.preventDefault();
+                            showNoteContextMenu(e, item, section.id);
+                        });
+
+                        sectionElement.appendChild(noteCard);
+                    } else {
+                        const bookmarkCard = document.createElement("div");
+                        bookmarkCard.classList.add("bookmark-card");
+                        bookmarkCard.draggable = true;
+
+                        if (currentSortMethod === 'custom') {
+                            bookmarkCard.addEventListener("dragstart", (e) => {
+                                e.dataTransfer.setData("text", JSON.stringify(item));
+                            });
+                            bookmarkCard.addEventListener("dragover", allowDrop);
+                            bookmarkCard.addEventListener("drop", handleDrop);
+                        } else {
+                            bookmarkCard.addEventListener("dragstart", (e) => {
+                                e.preventDefault();
+                                alert("Drag and drop is only available in Custom Order mode!");
+                            });
+                        }
+
+                        if (item.iconData) {
+                            const bookmarkIcon = document.createElement("img");
+                            bookmarkIcon.classList.add("bookmark-icon");
+                            bookmarkIcon.src = item.iconData;
+                            bookmarkIcon.style.backgroundColor = item.backgroundColor || '#333';
+                            bookmarkCard.appendChild(bookmarkIcon);
+                        } else {
+                            const bookmarkInitial = document.createElement("div");
+                            bookmarkInitial.classList.add("bookmark-initial");
+                            bookmarkInitial.style.color = item.initialColor || '#3498db';
+                            bookmarkInitial.style.backgroundColor = item.backgroundColor || '#333';
+                            bookmarkInitial.textContent = item.title.charAt(0).toUpperCase();
+                            bookmarkCard.appendChild(bookmarkInitial);
+                        }
+
+                        const titleElement = document.createElement("h3");
+                        titleElement.textContent = item.title;
+                        const descElement = document.createElement("p");
+                        descElement.textContent = item.description || '';
+
+                        if (showClicks) {
+                            const clickCountElement = document.createElement("div");
+                            clickCountElement.classList.add("click-count");
+                            clickCountElement.textContent = `Clicks: ${item.clickCount || 0}`;
+                            bookmarkCard.appendChild(clickCountElement);
+                        }
+
+                        bookmarkCard.appendChild(titleElement);
+                        bookmarkCard.appendChild(descElement);
+
+                        bookmarkCard.addEventListener("contextmenu", (e) => showContextMenu(e, item, section.id));
+
+                        bookmarkCard.addEventListener("click", () => {
+                            item.clickCount = (item.clickCount || 0) + 1;
+                            item.lastClickTime = Date.now();
+                            localStorage.setItem("sections", JSON.stringify(sections));
+                            renderSections();
+                            window.open(item.url, '_self');
+                        });
+
+                        sectionElement.appendChild(bookmarkCard);
+                    }
+                });
+
+                dashboard.appendChild(sectionElement);
+
+                const option = document.createElement("option");
+                const optionNote = document.createElement("option");
+                option.value = section.id;
+                optionNote.value = section.id;
+                option.textContent = section.name;
+                optionNote.textContent = section.name;
+                sectionSelect.appendChild(option);
+                sectionSelectNote.appendChild(optionNote.cloneNode(true));
+            });
+        }
+        function getRandomColor() {
+            return '#' + Math.floor(Math.random() * 16777215).toString(16);
+        }
+
+
+        // Modified openBookmarkColorEditor function to properly populate icon data
+        function openBookmarkColorEditor(bookmark, sectionId) {
+            const modal = document.getElementById('addBookmarkForm');
+            const titleInput = document.getElementById('bookmarkTitle');
+            const urlInput = document.getElementById('bookmarkUrl');
+            const descInput = document.getElementById('bookmarkDescription');
+            const initialColorInput = document.getElementById('bookmarkInitialColor');
+            const backgroundColorInput = document.getElementById('bookmarkBackgroundColor');
+            const sectionSelect = document.getElementById('sectionSelect');
+            const iconPreview = document.getElementById('iconPreview');
+            const removeIconBtn = document.getElementById('removeIconBtn');
+
+            // Populate existing bookmark details
+            titleInput.value = bookmark.title;
+            urlInput.value = bookmark.url;
+            descInput.value = bookmark.description || '';
+            initialColorInput.value = bookmark.initialColor || '#3498db';
+            backgroundColorInput.value = bookmark.backgroundColor || '#333';
+
+            // Handle icon data
+            if (bookmark.iconData) {
+                iconPreview.src = bookmark.iconData;
+                iconPreview.style.display = 'block';
+                removeIconBtn.style.display = 'block';
+            } else {
+                iconPreview.style.display = 'none';
+                removeIconBtn.style.display = 'none';
+            }
+
+            sectionSelect.value = sectionId;
+            currentEditBookmark = bookmark;  // Set the current bookmark being edited
+            modal.style.display = "flex";
+        }
+
+        // Add Section Button
+        document.getElementById("addSectionBtn").addEventListener("click", () => {
+            const sectionModal = document.getElementById("sectionModal");
+            const newSectionName = document.getElementById("newSectionName");
+            const createSectionConfirm = document.getElementById("createSectionConfirm");
+            const createSectionCancel = document.getElementById("createSectionCancel");
+
+            sectionModal.style.display = "flex";
+            newSectionName.value = "";
+
+            createSectionConfirm.onclick = () => {
+                const sectionName = newSectionName.value.trim();
+                if (sectionName) {
+                    const exists = sections.some(s => s.name.toLowerCase() === sectionName.toLowerCase());
+                    if (exists) {
+                        alert("A section with this name already exists.");
+                        return;
+                    }
+
+                    sections.push({
+                        id: Date.now(),
+                        name: sectionName,
+                        bookmarks: []
+                    });
+                    localStorage.setItem("sections", JSON.stringify(sections));
+                    renderSections();
+                    sectionModal.style.display = "none";
+                } else {
+                    alert("Please enter a section name.");
+                }
+            };
+
+            createSectionCancel.onclick = () => {
+                sectionModal.style.display = "none";
+            };
+        });
+
+        // Modified addBookmarkBtn event listener
+        document.getElementById("addBookmarkBtn").addEventListener("click", () => {
+            // Reset form fields
+            document.getElementById("bookmarkTitle").value = "";
+            document.getElementById("bookmarkUrl").value = "";
+            document.getElementById("bookmarkDescription").value = "";
+            document.getElementById("bookmarkInitialColor").value = "#ffffff";
+            document.getElementById("bookmarkBackgroundColor").value = getRandomColor();
+
+            // Reset currentEditBookmark
+            currentEditBookmark = null;
+
+            const addBookmarkForm = document.getElementById("addBookmarkForm");
+            addBookmarkForm.style.display = "flex";
+        });
+
+        // Add new deleteSection function
+        function deleteSection(sectionId) {
+            if (confirm("Are you sure you want to delete this section and all its bookmarks?")) {
+                sections = sections.filter(section => section.id !== sectionId);
+                localStorage.setItem("sections", JSON.stringify(sections));
+                renderSections();
+            }
+        }
+        document.getElementById("saveBookmarkBtn").addEventListener("click", () => {
+            const title = document.getElementById("bookmarkTitle").value.trim();
+            const url = document.getElementById("bookmarkUrl").value.trim();
+            const description = document.getElementById("bookmarkDescription").value.trim();
+            const sectionId = document.getElementById("sectionSelect").value;
+            const initialColor = document.getElementById("bookmarkInitialColor").value;
+            const backgroundColor = document.getElementById("bookmarkBackgroundColor").value;
+            const iconPreview = document.getElementById("iconPreview");
+            const iconData = iconPreview.style.display !== 'none' ? iconPreview.src : null;
+
+            if (!title || !url) {
+                alert("Please provide valid bookmark details.");
+                return;
+            }
+
+            const section = sections.find(s => s.id == sectionId);
+            if (!section) {
+                alert("Please select a valid section.");
+                return;
+            }
+
+            const bookmark = {
+                title,
+                url,
+                description,
+                initialColor,
+                backgroundColor,
+                iconData,
+                clickCount: currentEditBookmark ? (currentEditBookmark.clickCount || 0) : 0,
+                lastClickTime: currentEditBookmark ? currentEditBookmark.lastClickTime : null
+            };
+
+            if (currentEditBookmark) {
+                // Find the section containing the bookmark being edited
+                const oldSection = sections.find(s =>
+                    s.bookmarks.some(b =>
+                        b.title === currentEditBookmark.title &&
+                        b.url === currentEditBookmark.url
+                    )
+                );
+
+                if (oldSection) {
+                    if (oldSection.id === section.id) {
+                        // If staying in the same section, update in place
+                        const bookmarkIndex = oldSection.bookmarks.findIndex(b =>
+                            b.title === currentEditBookmark.title &&
+                            b.url === currentEditBookmark.url
+                        );
+
+                        if (bookmarkIndex !== -1) {
+                            // Preserve the exact position by updating the bookmark at its current index
+                            oldSection.bookmarks[bookmarkIndex] = bookmark;
+                        }
+                    } else {
+                        // If moving to a different section
+                        // 1. Remove from old section while preserving order of other items
+                        oldSection.bookmarks = oldSection.bookmarks.filter(b =>
+                            !(b.title === currentEditBookmark.title && b.url === currentEditBookmark.url)
+                        );
+
+                        // 2. Add to new section
+                        section.bookmarks.push(bookmark);
+
+                        // 3. Update custom order for both sections
+                        if (oldSection.sortMethod === 'custom') {
+                            oldSection.customOrder = oldSection.bookmarks.map(b => ({
+                                title: b.title,
+                                url: b.url || null,
+                                type: b.type || 'bookmark',
+                                id: b.id || null
+                            }));
+                        }
+                    }
+                }
+            } else {
+                // New bookmark - add to end while preserving existing order
+                section.bookmarks.push(bookmark);
+            }
+
+            // Update custom order for the current section if using custom sort
+            if (section.sortMethod === 'custom') {
+                section.customOrder = section.bookmarks.map(b => ({
+                    title: b.title,
+                    url: b.url || null,
+                    type: b.type || 'bookmark',
+                    id: b.id || null
+                }));
+            }
+
+            localStorage.setItem("sections", JSON.stringify(sections));
+            renderSections();
+            document.getElementById("addBookmarkForm").style.display = "none";
+            currentEditBookmark = null;
+        });
+        function resetClickCounts() {
+            if (confirm('Are you sure you want to reset click counts for all bookmarks?')) {
+                sections.forEach(section => {
+                    section.bookmarks.forEach(bookmark => {
+                        bookmark.clickCount = 0;
+                    });
+                });
+
+                localStorage.setItem("sections", JSON.stringify(sections));
+                renderSections();
+            }
+        }
+
+        // Update the event listener
+        document.getElementById("resetClickCountsBtn").addEventListener("click", resetClickCounts);
+        // Add event listener
+        document.getElementById("resetClickCountsBtn").addEventListener("click", resetClickCounts);
+        // Close Bookmark Modal
+        document.getElementById("closeModalBtn").addEventListener("click", () => {
+            document.getElementById("addBookmarkForm").style.display = "none";
+        });
+
+        // Backup Bookmarks Function
+        document.getElementById("backupBookmarksBtn").addEventListener("click", () => {
+            // Prepare backup data
+            const backupData = {
+                sections: sections,
+                backgroundImage: localStorage.getItem('backgroundImage') || null
+            };
+
+            // Convert data to JSON
+            const backupJson = JSON.stringify(backupData, null, 2);
+
+            // Create a Blob with the JSON data
+            const blob = new Blob([backupJson], { type: 'application/json' });
+
+            // Create a download link
+            const downloadLink = document.createElement('a');
+            downloadLink.href = URL.createObjectURL(blob);
+            downloadLink.download = `monknow_backup_${new Date().toISOString().replace(/:/g, '-')}.json`;
+
+            // Trigger download
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        });
+
+        // Modified import bookmarks function to use white initial color
+        document.getElementById("importBookmarksBtn").addEventListener("click", () => {
+            const fileInput = document.createElement("input");
+            fileInput.type = "file";
+            fileInput.accept = ".html,.json";
+            fileInput.addEventListener("change", (event) => {
+                const file = event.target.files[0];
+                const reader = new FileReader();
+
+                reader.onload = (e) => {
+                    try {
+                        // Try parsing as JSON first (our backup format)
+                        const backupData = JSON.parse(e.target.result);
+
+                        if (backupData.sections) {
+                            // This is a MONKNOW backup file
+                            sections = backupData.sections;
+                            localStorage.setItem("sections", JSON.stringify(sections));
+
+                            // Restore background if exists
+                            if (backupData.backgroundImage) {
+                                localStorage.setItem('backgroundImage', backupData.backgroundImage);
+                                document.body.style.backgroundImage = `url('${backupData.backgroundImage}')`;
+                                document.body.style.backgroundSize = 'cover';
+                            }
+
+                            renderSections();
+                            alert('Backup restored successfully!');
+                            return;
+                        }
+                    } catch (jsonError) {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(e.target.result, "text/html");
+                        const links = doc.querySelectorAll("a[href]");
+                        const importedBookmarks = [];
+
+                        links.forEach(link => {
+                            const title = link.textContent.trim();
+                            const url = link.href;
+                            if (title && url && url.startsWith('http')) {
+                                importedBookmarks.push({
+                                    title,
+                                    url,
+                                    description: "",
+                                    initialColor: "#ffffff", // White initial color
+                                    backgroundColor: getRandomColor() // Random background color
+                                });
+                            }
+                        });
+
+
+                        if (importedBookmarks.length > 0) {
+                            const sectionModal = document.getElementById("sectionModal");
+                            const newSectionName = document.getElementById("newSectionName");
+                            const createSectionConfirm = document.getElementById("createSectionConfirm");
+                            const createSectionCancel = document.getElementById("createSectionCancel");
+
+                            sectionModal.style.display = "flex";
+                            newSectionName.value = "Imported Bookmarks";
+
+                            createSectionConfirm.onclick = () => {
+                                const sectionName = newSectionName.value.trim() || "Imported Bookmarks";
+
+                                const section = {
+                                    id: Date.now(),
+                                    name: sectionName,
+                                    bookmarks: importedBookmarks
+                                };
+
+                                sections.push(section);
+                                localStorage.setItem("sections", JSON.stringify(sections));
+                                renderSections();
+                                sectionModal.style.display = "none";
+                                alert(`Imported ${importedBookmarks.length} bookmarks`);
+                            };
+
+                            createSectionCancel.onclick = () => {
+                                sectionModal.style.display = "none";
+                            };
+                        } else {
+                            alert("No valid bookmarks found in the imported file.");
+                        }
+                    }
+                };
+                reader.readAsText(file);
+            });
+            fileInput.click();
+        });
+        // Modified clearBookmarksBtn event listener
+        document.getElementById("clearBookmarksBtn").addEventListener("click", () => {
+            if (confirm("Are you sure you want to clear all bookmarks and sections? This action cannot be undone.")) {
+                sections = [];
+                localStorage.removeItem("sections");
+                renderSections();
+            }
+        });
+
+        const contextMenu = document.getElementById('bookmarkContextMenu');
+        let hideTimeout;
+        function openNoteEditor(note, sectionId) {
+            const modal = document.getElementById('noteModal');
+            document.getElementById('noteTitle').value = note.title;
+            document.getElementById('noteContent').value = note.content;
+            document.getElementById('noteSize').value = note.size;
+            document.getElementById('sectionSelectNote').value = sectionId;
+            currentEditNote = note; // Add this line to track current note
+            modal.style.display = 'flex';
+        }
+
+        document.getElementById("saveNoteBtn").addEventListener("click", () => {
+            const title = document.getElementById("noteTitle").value.trim();
+            const content = document.getElementById("noteContent").value.trim();
+            const size = document.getElementById("noteSize").value;
+            const sectionId = document.getElementById("sectionSelectNote").value;
+
+            if (!title || !content) {
+                alert("Please fill in all required fields");
+                return;
+            }
+
+            const section = sections.find(s => s.id == sectionId);
+            if (!section) return;
+
+            if (currentEditNote) {
+                // Find the section containing the note being edited
+                const oldSection = sections.find(s =>
+                    s.bookmarks.some(n => n.id === currentEditNote.id)
+                );
+
+                if (oldSection) {
+                    if (oldSection.id === section.id) {
+                        // If staying in the same section, update in place
+                        const noteIndex = oldSection.bookmarks.findIndex(n => n.id === currentEditNote.id);
+                        if (noteIndex !== -1) {
+                            // Update the note while preserving its position
+                            section.bookmarks[noteIndex] = {
+                                ...currentEditNote,
+                                title,
+                                content,
+                                size
+                            };
+                        }
+                    } else {
+                        // If moving to a different section
+                        // 1. Remove from old section
+                        oldSection.bookmarks = oldSection.bookmarks.filter(n => n.id !== currentEditNote.id);
+
+                        // 2. Add to new section
+                        section.bookmarks.push({
+                            ...currentEditNote,
+                            title,
+                            content,
+                            size
+                        });
+
+                        // 3. Update custom order for old section
+                        if (oldSection.sortMethod === 'custom') {
+                            oldSection.customOrder = oldSection.bookmarks.map(b => ({
+                                title: b.title,
+                                url: b.url || null,
+                                type: b.type || 'bookmark',
+                                id: b.id || null
+                            }));
+                        }
+                    }
+                }
+            } else {
+                // Create new note
+                const note = {
+                    type: 'note',
+                    title,
+                    content,
+                    size,
+                    id: Date.now()
+                };
+                section.bookmarks.push(note);
+            }
+
+            // Update custom order for current section if using custom sort
+            if (section.sortMethod === 'custom') {
+                section.customOrder = section.bookmarks.map(b => ({
+                    title: b.title,
+                    url: b.url || null,
+                    type: b.type || 'bookmark',
+                    id: b.id || null
+                }));
+            }
+
+            localStorage.setItem("sections", JSON.stringify(sections));
+            renderSections();
+            document.getElementById("noteModal").style.display = "none";
+            currentEditNote = null;
+        });
+        function createNote(title, content, size, sectionId) {
+            const section = sections.find(s => s.id == sectionId);
+            if (!section) return;
+
+            const note = {
+                type: 'note',
+                title,
+                content,
+                size,
+                id: Date.now() // Add unique identifier
+            };
+
+            section.bookmarks.push(note);
+            localStorage.setItem("sections", JSON.stringify(sections));
+            renderSections();
+        }
+
+        function showNoteContextMenu(e, note, sectionId) {
+            const contextMenu = document.getElementById('bookmarkContextMenu');
+            contextMenu.innerHTML = '';
+
+            const editOption = document.createElement('div');
+            editOption.classList.add('context-menu-item');
+            editOption.textContent = 'Edit Note';
+            editOption.onclick = () => {
+                openNoteEditor(note, sectionId);
+                contextMenu.style.display = 'none';
+            };
+
+            const deleteOption = document.createElement('div');
+            deleteOption.classList.add('context-menu-item');
+            deleteOption.textContent = 'Delete Note';
+            deleteOption.onclick = () => {
+                const section = sections.find(s => s.id == sectionId);
+                if (section) {
+                    section.bookmarks = section.bookmarks.filter(b => b.id !== note.id);
+                    localStorage.setItem("sections", JSON.stringify(sections));
+                    renderSections();
+                }
+                contextMenu.style.display = 'none';
+            };
+            contextMenu.appendChild(editOption);
+            contextMenu.appendChild(deleteOption);
+
+            contextMenu.style.display = 'block';
+            contextMenu.style.left = `${e.clientX}px`;
+            contextMenu.style.top = `${e.clientY}px`;
+        }
+
+        // Modified drop function to handle notes
+        function drop(event) {
+            event.preventDefault();
+            const data = event.dataTransfer.getData("text");
+            const item = JSON.parse(data);
+            const targetSection = event.target.closest('.section');
+            const targetSectionId = targetSection.getAttribute('data-section-id');
+            const targetCard = event.target.closest('.bookmark-card, .note-card');
+
+            const section = sections.find(s => s.id == targetSectionId);
+            if (!section) return;
+
+            // Find the section containing the dragged item
+            const sourceSection = sections.find(s =>
+                s.bookmarks.some(b =>
+                    (item.type === 'note' && b.id === item.id) ||
+                    (!item.type && b.url === item.url && b.title === item.title)
+                )
+            );
+
+            if (sourceSection) {
+                // Remove item from source section
+                sourceSection.bookmarks = sourceSection.bookmarks.filter(b =>
+                    !(item.type === 'note' ? b.id === item.id :
+                        (!b.type && b.url === item.url && b.title === item.title))
+                );
+            }
+
+            if (targetCard) {
+                const targetIndex = Array.from(targetSection.querySelectorAll('.bookmark-card, .note-card')).indexOf(targetCard);
+                section.bookmarks.splice(targetIndex, 0, item);
+            } else {
+                section.bookmarks.push(item);
+            }
+
+            localStorage.setItem("sections", JSON.stringify(sections));
+            renderSections();
+        }
+        // Initialize note UI handlers
+        document.getElementById("createNoteBtn").addEventListener("click", () => {
+            const modal = document.getElementById("noteModal");
+            const sectionSelect = document.getElementById("sectionSelectNote");
+
+            document.getElementById("noteTitle").value = '';
+            document.getElementById("noteContent").value = '';
+            document.getElementById("noteSize").value = '1x1';
+
+            sectionSelect.innerHTML = '';
+            sections.forEach(section => {
+                const option = document.createElement("option");
+                option.value = section.id;
+                option.textContent = section.name;
+                sectionSelect.appendChild(option);
+            });
+
+            modal.style.display = "flex";
+        });
+
+        document.getElementById("closeNoteModalBtn").addEventListener("click", () => {
+            document.getElementById("noteModal").style.display = "none";
+        });
+
+        // Add CSS transition for opacity
+        contextMenu.style.transition = 'opacity 1s ease-out';
+        let contextMenuTimer;
+        function showContextMenu(e, bookmark, sectionId) {
+            e.preventDefault();
+            const contextMenu = document.getElementById('bookmarkContextMenu');
+
+            // Clear any existing context menu items first
+            while (contextMenu.firstChild) {
+                contextMenu.removeChild(contextMenu.firstChild);
+            }
+
+            // Clear any existing timers
+            clearTimeout(contextMenuTimer);
+            clearTimeout(hideTimeout);
+
+            contextMenu.style.display = 'block';
+            contextMenu.style.opacity = '1';
+            contextMenu.style.left = `${e.clientX + -5}px`;
+            contextMenu.style.top = `${e.clientY + -5}px`;
+
+            currentEditBookmark = bookmark;
+            currentEditSectionId = sectionId;
+
+            // Open Website Option
+            const openWebsiteOption = document.createElement('div');
+            openWebsiteOption.classList.add('context-menu-item');
+            openWebsiteOption.textContent = 'Open Website In New Tab';
+            openWebsiteOption.onclick = () => {
+                // Increment click count when opened from context menu
+                bookmark.clickCount = (bookmark.clickCount || 0) + 1;
+                localStorage.setItem("sections", JSON.stringify(sections));
+                renderSections();
+
+                window.open(bookmark.url, '_blank');
+                hideContextMenu();
+            };
+            contextMenu.appendChild(openWebsiteOption);
+
+            // Edit Bookmark Option
+            const editBookmarkOption = document.createElement('div');
+            editBookmarkOption.classList.add('context-menu-item');
+            editBookmarkOption.textContent = 'Edit Bookmark';
+            editBookmarkOption.onclick = () => {
+                openBookmarkColorEditor(bookmark, sectionId);
+                hideContextMenu();
+            };
+            contextMenu.appendChild(editBookmarkOption);
+
+            // Delete Bookmark Option
+            const deleteBookmarkOption = document.createElement('div');
+            deleteBookmarkOption.classList.add('context-menu-item');
+            deleteBookmarkOption.textContent = 'Delete Bookmark';
+            deleteBookmarkOption.onclick = () => {
+                const section = sections.find(s => s.id == sectionId);
+                if (section) {
+                    section.bookmarks = section.bookmarks.filter(b =>
+                        !(b.title === bookmark.title && b.url === bookmark.url)
+                    );
+                    localStorage.setItem("sections", JSON.stringify(sections));
+                    renderSections();
+                }
+                hideContextMenu();
+            };
+            contextMenu.appendChild(deleteBookmarkOption);
+
+            // Reset Click Count Option
+            const resetClickCountOption = document.createElement('div');
+            resetClickCountOption.classList.add('context-menu-item');
+            resetClickCountOption.textContent = 'Reset Click Count';
+            resetClickCountOption.onclick = () => {
+                bookmark.clickCount = 0;
+                localStorage.setItem("sections", JSON.stringify(sections));
+                renderSections();
+                hideContextMenu();
+            };
+            contextMenu.appendChild(resetClickCountOption);
+
+            // Set a timer to keep the context menu visible for 5 seconds
+            contextMenuTimer = setTimeout(hideContextMenu, 5000);
+
+            // Add click-away listener
+            function clickAwayListener(event) {
+                if (!contextMenu.contains(event.target)) {
+                    hideContextMenu();
+                    document.removeEventListener('click', clickAwayListener);
+                }
+            }
+            document.addEventListener('click', clickAwayListener);
+        }
+
+        document.getElementById("bookmarksPerRowSelect").addEventListener("change", (e) => {
+            bookmarksPerRow = e.target.value;
+            localStorage.setItem("bookmarksPerRow", bookmarksPerRow);
+            renderSections(); // Immediately re-render all sections
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => {
+                if (bookmarksPerRow === "auto") {
+                    section.style.gridTemplateColumns = `repeat(auto-fit, minmax(240px, 1fr))`;
+                } else {
+                    section.style.gridTemplateColumns = `repeat(${bookmarksPerRow}, 1fr)`;
+                } ad
+            });
+        });
+
+        // Add this to your initialization code
+        const savedBookmarksPerRow = localStorage.getItem("bookmarksPerRow") || "auto";
+        document.getElementById("bookmarksPerRowSelect").value = savedBookmarksPerRow;
+        if (savedBookmarksPerRow !== "auto") {
+            document.querySelectorAll('.section').forEach(section => {
+                section.style.gridTemplateColumns = `repeat(${savedBookmarksPerRow}, 1fr)`;
+            });
+        }
+        // Function to hide menu with animation
+        const hideMenu = () => {
+            contextMenu.style.opacity = '0';
+            setTimeout(() => {
+                contextMenu.style.display = 'none';
+                contextMenu.style.opacity = '1'; // Reset opacity for next show
+            }, 1000); // Match this with transition duration
+        };
+        document.getElementById("hour12Toggle").addEventListener("change", (e) => {
+            hour12Format = e.target.checked;
+            localStorage.setItem("hour12Format", hour12Format);
+            updateClock();
+        });
+        // Settings event listeners
+        document.getElementById("settingsBtn").addEventListener("click", () => {
+            document.getElementById("settingsModal").style.display = "flex";
+            document.getElementById("showClicksToggle").checked = showClicks;
+        });
+
+        document.getElementById("closeSettingsBtn").addEventListener("click", () => {
+            document.getElementById("settingsModal").style.display = "none";
+        });
+
+        document.getElementById("showClicksToggle").addEventListener("change", (e) => {
+            showClicks = e.target.checked;
+            localStorage.setItem("showClicks", showClicks);
+            renderSections();
+        });
+        // Hide menu when mouse leaves
+        contextMenu.addEventListener('mouseleave', () => {
+            hideMenu();
+        });
+
+
+        // Initialize
+        renderSections();
+    </script>
+
+</body>
+
+</html>
